@@ -20,7 +20,7 @@ let heartbeatInterval = null;
 function initSocket() {
   if (socket && socket.connected) return;
 
-  socket = io('http://localhost:5001', {
+  socket = io('https://flux-k6pb.onrender.com', {
     transports: ['websocket'],
     reconnection: true,
     reconnectionAttempts: Infinity,

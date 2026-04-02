@@ -9,12 +9,12 @@ import {
 } from 'lucide-react';
 import ResearchTabs from './ResearchTabs';
 
-const socket = io('http://localhost:5001', {
+const socket = io('https://flux-k6pb.onrender.com', {
   transports: ['websocket'],
   reconnection: true
 });
 
-const API_BASE = 'http://localhost:5001/api';
+const API_BASE = 'https://flux-k6pb.onrender.com/api';
 
 export default function LearnDashboard({ token, userId, onBack }) {
   const [inputValue, setInputValue] = useState('');

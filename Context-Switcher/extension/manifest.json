@@ -10,7 +10,7 @@
     "alarms"
   ],
   "host_permissions": [
-    "http://localhost:5001/*"
+    "https://flux-k6pb.onrender.com/*"
   ],
   "background": {
     "service_worker": "background.js",

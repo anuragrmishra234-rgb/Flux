@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import fluxLogo from './assets/flux-logo.png';
 
-const API_BASE = 'http://localhost:5001/api/auth';
+const API_BASE = 'https://flux-k6pb.onrender.com/api/auth';
 
 export default function AuthPage({ onAuth }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
