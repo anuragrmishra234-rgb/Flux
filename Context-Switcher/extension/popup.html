@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 300px;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #050b18;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a1f35 0%, #0f172a 100%);
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(99,102,241,0.4);
+    }
+    .logo svg { width: 18px; height: 18px; }
+    .header-text h1 { font-size: 14px; font-weight: 800; color: #f1f5f9; letter-spacing: -0.3px; }
+    .header-text p { font-size: 11px; color: #64748b; }
+
+    /* Status row */
+    .status-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: #0a1020;
+      border-bottom: 1px solid #1e293b;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .dot.online  { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.7); animation: pulse 2s infinite; }
+    .dot.offline { background: #ef4444; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .status-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-label.online  { color: #10b981; }
+    .status-label.offline { color: #ef4444; }
+    
+    .sync-btn {
+      margin-left: auto;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+      transition: all 0.2s;
+    }
+    .sync-btn:hover { background: #334155; color: #f1f5f9; border-color: #475569; }
+    .sync-btn:active { transform: scale(0.95); }
+    .sync-btn svg { width: 10px; height: 10px; }
+
+    /* Active context card */
+    .active-card {
+      margin: 12px;
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+    }
+    .active-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .active-card-label {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: #64748b; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .active-name {
+      font-size: 16px; font-weight: 800;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .active-icon { font-size: 18px; }
+
+    /* Timer */
+    .timer-section {
+      margin-top: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .timer-bar-bg {
+      flex: 1; height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .timer-bar-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, #6366f1, #06b6d4);
+      transition: width 1s linear;
+    }
+    .timer-text {
+      font-size: 12px; font-weight: 700;
+      color: #94a3b8; font-variant-numeric: tabular-nums; min-width: 40px;
+      text-align: right;
+    }
+    .timer-done { color: #f59e0b; }
+
+    /* URL list */
+    .url-list {
+      margin: 0 12px 10px;
+      display: flex; flex-wrap: wrap; gap: 5px;
+    }
+    .url-chip {
+      font-size: 10px; color: #94a3b8;
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 6px; padding: 3px 8px;
+      max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* No context state */
+    .idle-state {
+      text-align: center;
+      padding: 20px 16px;
+      color: #475569;
+    }
+    .idle-state .idle-icon { font-size: 28px; margin-bottom: 8px; }
+    .idle-state p { font-size: 12px; line-height: 1.5; }
+
+    /* Footer */
+    .footer {
+      padding: 8px 16px 12px;
+      border-top: 1px solid #1e293b;
+      font-size: 10px; color: #374151;
+      text-align: center;
+    }
+    .footer b { color: #4b5563; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <svg fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Flux</h1>
+      <p>Workspace Companion v2.0</p>
+    </div>
+  </div>
+
+  <!-- Status Row -->
+  <div class="status-row">
+    <span id="indicator" class="dot offline"></span>
+    <span id="status-text" class="status-label offline">Offline</span>
+    <button id="sync-btn" class="sync-btn" title="Force Reconnect">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Sync
+    </button>
+  </div>
+
+  <!-- Dynamic Content -->
+  <div id="content"></div>
+
+  <!-- Footer -->
+  <div class="footer">Triggered from <b>Flux Dashboard</b> · Port 5001</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

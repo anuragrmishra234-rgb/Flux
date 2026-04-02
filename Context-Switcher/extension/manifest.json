@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Flux Companion",
+  "version": "2.0",
+  "description": "Seamlessly switches browser workspaces triggered by Flux.",
+  "permissions": [
+    "tabs",
+    "notifications",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "http://localhost:5001/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Flux"
+  }
+}
