@@ -58,6 +58,11 @@ function initSocket() {
       console.log('✅ Extension Synced: ID ' + payload.userId);
     }
   });
+
+  // Handle extension ping from dashboard
+  socket.on('trigger_extension_ping', () => {
+    socket.emit('extension_pong');
+  });
 }
 
 /**

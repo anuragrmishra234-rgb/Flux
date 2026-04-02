@@ -61,6 +61,7 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isExtensionActive, setIsExtensionActive] = useState(false);
   
   const [formData, setFormData] = useState({ 
     name: '', 
@@ -96,6 +97,18 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
 
+    // Extension Heartbeat
+    const pingInterval = setInterval(() => {
+      socket.emit('ping_extension');
+    }, 3000);
+
+    const onPong = () => {
+      console.log('✨ Extension detected!');
+      setIsExtensionActive(true);
+    };
+
+    socket.on('extension_pong', onPong);
+
     // Keyboard shortcuts
     const handleKeyDown = (e) => {
       if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
@@ -113,6 +126,8 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
+      socket.off('extension_pong', onPong);
+      clearInterval(pingInterval);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
@@ -181,17 +196,37 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
     }
   };
 
-  const activateContext = (context) => {
-    socket.emit('activate_context', {
-      contextId: context._id,
-      userId: localStorage.getItem('ctx_userId'),
-      name: context.name,
-      urls: context.urls,
-      color: context.color,
-      icon: context.icon,
-      focusMode
-    });
-    notify(`Activating ${context.name}...`);
+  const activateContext = async (context) => {
+    if (isExtensionActive) {
+      socket.emit('activate_context', {
+        contextId: context._id,
+        userId: localStorage.getItem('ctx_userId'),
+        name: context.name,
+        urls: context.urls,
+        color: context.color,
+        icon: context.icon,
+        focusMode
+      });
+      notify(`Launching ${context.name} (via Extension)...`);
+    } else {
+      // FALLBACK: Manual window.open
+      notify(`Extension not detected. Launching ${context.name} via Browser Popups...`, 'warning');
+      
+      // Browsers block multiple popups unless user allows them.
+      context.urls.forEach((url, index) => {
+        setTimeout(() => {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }, index * 200);
+      });
+
+      // Still inform server for count tracking
+      socket.emit('activate_context_manual', { contextId: context._id });
+    }
+
+    // Update local count
+    setContexts(contexts.map(ctx => 
+      ctx._id === context._id ? { ...ctx, activationCount: (ctx.activationCount || 0) + 1, lastActivatedAt: new Date() } : ctx
+    ));
   };
 
   const exportData = async () => {

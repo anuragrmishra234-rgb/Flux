@@ -429,6 +429,20 @@ io.on('connection', (socket) => {
   });
 
 
+  /**
+   * EXTENSION HEARTBEAT RELAY
+   */
+  socket.on('ping_extension', () => {
+    // Send ping to all clients (the extension will answer)
+    io.emit('trigger_extension_ping');
+  });
+
+  socket.on('extension_pong', () => {
+    // Relay pong back to all clients (the dashboard will receive it)
+    io.emit('extension_pong');
+  });
+
+
   socket.on('disconnect', () => {
     const type = clients.get(socket.id) || 'DASHBOARD/UNKNOWN';
     console.log(`🔌 ${type} Disconnected: ${socket.id}`);
