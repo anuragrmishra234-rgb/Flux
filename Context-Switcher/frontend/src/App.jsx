@@ -2,12 +2,14 @@ import { useState } from 'react';
 import AuthPage from './AuthPage';
 import Dashboard from './Dashboard';
 import LearnDashboard from './LearnDashboard';
+import WelcomeScreen from './WelcomeScreen';
 
 function App() {
   const [token, setToken] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
   const [userId, setUserId] = useState(null);
   const [view, setView] = useState('dashboard'); // 'dashboard' | 'learn'
+  const [showWelcome, setShowWelcome] = useState(true);
 
   const handleAuth = (newToken, email, userId) => {
     localStorage.setItem('ctx_token', newToken);
@@ -27,6 +29,10 @@ function App() {
     setUserId(null);
     setView('dashboard');
   };
+
+  if (showWelcome) {
+    return <WelcomeScreen onFinish={() => setShowWelcome(false)} />;
+  }
 
   if (!token) {
     return <AuthPage onAuth={handleAuth} />;
