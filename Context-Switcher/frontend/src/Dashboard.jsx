@@ -62,6 +62,7 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isExtensionActive, setIsExtensionActive] = useState(false);
+  const [showPopupAlert, setShowPopupAlert] = useState(false);
   
   const [formData, setFormData] = useState({ 
     name: '', 
@@ -89,7 +90,7 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
 
     const onConnect = () => {
       setIsConnected(true);
-      const uid = userId || localStorage.getItem('ctx_userId');
+      const uid = localStorage.getItem('ctx_userId');
       if (uid) socket.emit('sync_user_id', { userId: uid });
     };
     const onDisconnect = () => setIsConnected(false);
@@ -197,6 +198,8 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
   };
 
   const activateContext = async (context) => {
+    let popupBlocked = false;
+    
     if (isExtensionActive) {
       socket.emit('activate_context', {
         contextId: context._id,
@@ -210,12 +213,16 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
       notify(`Launching ${context.name} (via Extension)...`);
     } else {
       // FALLBACK: Manual window.open
-      notify(`Extension not detected. Launching ${context.name} via Browser Popups...`, 'warning');
+      notify(`Extension missing. Launching tabs via Popups...`, 'warning');
       
       // Browsers block multiple popups unless user allows them.
       context.urls.forEach((url, index) => {
         setTimeout(() => {
-          window.open(url, '_blank', 'noopener,noreferrer');
+          const win = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!win || win.closed || typeof win.closed === 'undefined') {
+            popupBlocked = true;
+            setShowPopupAlert(true);
+          }
         }, index * 200);
       });
 
@@ -307,6 +314,12 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
             <p className="text-gray-500 text-xs font-medium border-l border-gray-800 pl-3">
               {contexts.length} Workspaces Available
             </p>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ml-2 transition-all duration-500 ${isExtensionActive ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
+               <div className={`w-1.5 h-1.5 rounded-full ${isExtensionActive ? 'bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,1)]' : 'bg-amber-400 animate-pulse'}`} />
+               <span className={`text-[10px] font-bold uppercase tracking-widest ${isExtensionActive ? 'text-indigo-400' : 'text-amber-400'}`}>
+                 {isExtensionActive ? 'Sync Active' : 'Popup Mode'}
+               </span>
+            </div>
           </div>
         </div>
 
@@ -426,7 +439,7 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
                          </div>
                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                            <button onClick={() => deleteContext(ctx._id)} className="p-2 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors">
-                              <Trash2 className="w-4 h-4" />
+                               <Trash2 className="w-4 h-4" />
                            </button>
                          </div>
                       </div>
@@ -449,7 +462,7 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
 
                         {/* Session Note - Inline editable */}
                         <div className="space-y-1.5">
-                           <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Active Notes</label>
+                           <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Notes</label>
                            <textarea 
                              className="w-full bg-gray-950/50 border border-gray-800 rounded-lg p-2.5 text-xs text-gray-400 italic resize-none outline-none focus:border-indigo-500/50 transition-colors"
                              defaultValue={ctx.sessionNote}
@@ -660,6 +673,45 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
           >
             {showToast.type === 'error' ? <Trash2 className="w-4 h-4" /> : <Check className="w-4 h-4" />}
             {showToast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Popup Blocked Guider */}
+      <AnimatePresence>
+        {showPopupAlert && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+          >
+            <div className="bg-gray-900 border border-amber-500/30 rounded-3xl p-8 max-w-md w-full shadow-[0_0_50px_rgba(245,158,11,0.15)] text-center relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+               
+               <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                 <Globe className="w-8 h-8 text-amber-400" />
+               </div>
+
+               <h2 className="text-2xl font-black text-white mb-2">Popups Blocked!</h2>
+               <p className="text-gray-400 mb-8 text-sm leading-relaxed">
+                 To open all your links at once on this computer, please click the <strong>pop-up icon</strong> in your browser's address bar and select <strong>"Always allow pop-ups from Flux."</strong>
+               </p>
+
+               <div className="bg-black/40 border border-gray-800 rounded-2xl p-4 mb-8 flex items-center gap-4 text-left">
+                  <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-xl">💡</div>
+                  <div className="flex-1 text-xs text-gray-500 font-medium">
+                    This is only required once per browser. After you allow it, your workspaces will launch instantly!
+                  </div>
+               </div>
+
+               <button 
+                onClick={() => setShowPopupAlert(false)}
+                className="w-full py-4 bg-white text-black font-black text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-amber-400 transition-colors"
+               >
+                 Got it, I'll allow them
+               </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
