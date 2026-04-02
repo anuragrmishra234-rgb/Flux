@@ -220,8 +220,11 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
         setTimeout(() => {
           const win = window.open(url, '_blank', 'noopener,noreferrer');
           if (!win || win.closed || typeof win.closed === 'undefined') {
-            popupBlocked = true;
-            setShowPopupAlert(true);
+            const hasSeenAlert = localStorage.getItem('flux_popup_alert_shown');
+            if (!hasSeenAlert) {
+              setShowPopupAlert(true);
+              localStorage.setItem('flux_popup_alert_shown', 'true');
+            }
           }
         }, index * 200);
       });
