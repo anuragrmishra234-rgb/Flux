@@ -30,6 +30,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.get('/', (req, res) => res.send('Flux API is running successfully! 🚀'));
 
 const io = new Server(server, {
   cors: {
