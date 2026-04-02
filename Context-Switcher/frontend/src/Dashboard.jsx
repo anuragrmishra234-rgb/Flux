@@ -215,15 +215,20 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
       // FALLBACK: Manual window.open
       notify(`Extension missing. Launching tabs via Popups...`, 'warning');
       
+      // Check once if we've EVER shown the alert to avoid spamming
+      const HasSeenForever = localStorage.getItem('flux_popup_hint_done');
+      let showingThisClick = false;
+
       // Browsers block multiple popups unless user allows them.
       context.urls.forEach((url, index) => {
         setTimeout(() => {
           const win = window.open(url, '_blank', 'noopener,noreferrer');
+          
+          // Detection: If window is null/closed, popup was blocked
           if (!win || win.closed || typeof win.closed === 'undefined') {
-            const hasSeenAlert = localStorage.getItem('flux_popup_alert_shown');
-            if (!hasSeenAlert) {
+            if (!HasSeenForever && !showingThisClick) {
               setShowPopupAlert(true);
-              localStorage.setItem('flux_popup_alert_shown', 'true');
+              showingThisClick = true; // Prevent multiple popups in THIS single click loop
             }
           }
         }, index * 200);
@@ -709,7 +714,10 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
                </div>
 
                <button 
-                onClick={() => setShowPopupAlert(false)}
+                onClick={() => {
+                  setShowPopupAlert(false);
+                  localStorage.setItem('flux_popup_hint_done', 'true');
+                }}
                 className="w-full py-4 bg-white text-black font-black text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-amber-400 transition-colors"
                >
                  Got it, I'll allow them
