@@ -45,9 +45,16 @@ const io = new Server(server, {
 /**
  * MONGODB CONNECTION
  */
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Connected to MongoDB Atlas'))
-  .catch(err => console.error('❌ MongoDB Connection Error:', err.message));
+const connectWithRetry = () => {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ Connected to MongoDB Atlas'))
+    .catch(err => {
+      console.error('❌ MongoDB Connection Error:', err.message);
+      console.log('🔄 Retrying connection in 5 seconds...');
+      setTimeout(connectWithRetry, 5000);
+    });
+};
+connectWithRetry();
 
 /**
  * AUTH MIDDLEWARE
