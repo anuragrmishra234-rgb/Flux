@@ -1,3 +1,4 @@
+https://fluxx-two.vercel.app/
 Flux is a high-performance, context-aware productivity ecosystem designed to streamline the way students and developers research and work.
 
 The project transforms your browser from a messy set of tabs into a focused "Command Center" by synchronizing a web dashboard with a specialized Chrome Extension.
@@ -21,3 +22,5 @@ Database: MongoDB Atlas.
 Browser: Chrome Extension Manifest v3. 
 
 by author - Anuraag Mishra
+https://fluxx-two.vercel.app/ 
+this is the live server 
