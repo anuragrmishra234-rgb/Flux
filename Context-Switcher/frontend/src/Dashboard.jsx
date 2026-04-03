@@ -27,7 +27,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-const socket = io('https://flux-k6pb.onrender.com', {
+const socket = io(import.meta.env.MODE === 'production' ? 'https://flux-k6pb.onrender.com' : 'http://localhost:5001', {
   transports: ['websocket']
 });
 
@@ -78,7 +78,9 @@ export default function Dashboard({ token, userEmail, onLogout, onNavigate }) {
   
   const fileInputRef = useRef(null);
 
-  const API_BASE = 'https://flux-k6pb.onrender.com/api/contexts';
+  const API_BASE = import.meta.env.MODE === 'production' 
+    ? 'https://flux-k6pb.onrender.com/api/contexts' 
+    : 'http://localhost:5001/api/contexts';
 
   const api = axios.create({
     baseURL: API_BASE,
